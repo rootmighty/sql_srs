@@ -69,4 +69,3 @@ if option in my_options:
 
 else:
     st.warning("Please select a correct theme !!")
-
