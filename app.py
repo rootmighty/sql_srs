@@ -62,4 +62,4 @@ if option in my_options:
         st.write(answer)
 
 else:
-    st.warning("Please do select a correct theme !!")
+    st.warning("Please select a correct theme !!")
