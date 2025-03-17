@@ -67,9 +67,6 @@ if option in my_options:
     with tab2:
         st.write(answer)
 
-
 else:
     st.warning("Please select a correct theme !!")
-
-
 
