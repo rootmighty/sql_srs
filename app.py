@@ -25,3 +25,5 @@ if option in my_options:
         st.dataframe(result)
 else:
     st.warning("Please select a correct theme !!")
+
+#Add by mighty
