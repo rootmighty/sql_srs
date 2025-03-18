@@ -6,13 +6,6 @@ import ast
 
 con = duckdb.connect(database="data/exercises_sql_tables.duckdb", read_only=False)
 
-ANSWER_STR = """
-SELECT * FROM beverages
-CROSS JOIN food_items
-"""
-
-# solution_df = duckdb.query(query=ANSWER_STR).df()
-
 my_options = ["CrossJoins", "GroupBy", "CTE", "SubQueries", "Window_Functions"]
 with st.sidebar:
     theme = st.selectbox(
@@ -47,6 +40,13 @@ if theme in my_options:
     #
     tab1, tab2 = st.tabs(["Tables", "Solution"])
 
+    exercise_name = exercise.loc[
+        0, "exercise_name"
+    ]  # Récupérer première ligne de la colonne qui nous intéresse
+    with open(f"answers/{exercise_name}.sql", "r") as f:
+        ANSWER_STR = f.read()
+    solution_df = con.execute(ANSWER_STR).df()
+
     with tab1:
         #    exercise_tables = ast.literal_eval(exercise.loc[0, 'tables'])
         exercise_tables = exercise.loc[0, "tables"]
@@ -55,22 +55,22 @@ if theme in my_options:
             st.write(f"Table: {table}")
             df_table = con.execute(f"SELECT * FROM {table}").df()
             st.dataframe(df_table)
-        # Resultats
-        if button_validation:
+    with tab2:
+        st.write(ANSWER_STR)
+
+    # Resultats
+    if button_validation:
+        try:
+            #Votre Résultat
             st.write("Your Result:")
             result = con.execute(input_query).df()
             st.dataframe(result)
-    #        st.write("Table: food_items")
-    #        st.dataframe(food_items)
-    #        st.write("Expected:")
-    #        st.dataframe(solution_df)
-    with tab2:
-        exercise_name = exercise.loc[
-            0, "exercise_name"
-        ]  # Récupérer première ligne de la colonne qui nous intéresse
-        with open(f"answers/{exercise_name}.sql", "r") as f:
-            ANSWER_STR = f.read()
-            st.write(ANSWER_STR)
+        except AttributeError as e:
+            st.warning("Please enter a valid SQL query !!")
+
+        # Résultat Attendu
+        st.write("Expected Result:")
+        st.dataframe(solution_df)
 
 else:
     st.warning("Please select a correct theme !!")
