@@ -3,24 +3,24 @@ import io
 import pandas as pd
 import duckdb
 
-con = duckdb.connect(database = "data/exercises_sql_tables.duckdb", read_only = False)
-#-------------------------------------------------------------------
-#EXERCISES LIST
-#===================================================================
+con = duckdb.connect(database="data/exercises_sql_tables.duckdb", read_only=False)
+# -------------------------------------------------------------------
+# EXERCISES LIST
+# ===================================================================
 
-data ={
-    "theme":["CrossJoins", "Window_Functions"],
-    "exercise_name": ["beverages_and_food","simple_window"],
-    "tables": [["beverages", "food_items"],"simple_window"],
-    "last_reviewed": ["1970-01-01","1970-01-01"]
+data = {
+    "theme": ["CrossJoins", "Window_Functions"],
+    "exercise_name": ["beverages_and_food", "simple_window"],
+    "tables": [["beverages", "food_items"], ["simple_window"]],
+    "last_reviewed": ["1970-01-01", "1970-01-01"],
 }
 
 memory_state_df = pd.DataFrame(data)
-con. execute("CREATE TABLE IF NOT EXISTS memory_state AS SELECT * FROM memory_state_df")
+con.execute("CREATE TABLE IF NOT EXISTS memory_state AS SELECT * FROM memory_state_df")
 
-#--------------------------------------------------------------------
+# --------------------------------------------------------------------
 # CROSS JOIN EXERCISES
-#====================================================================
+# ====================================================================
 
 CSV_1 = """
 beverage,price
