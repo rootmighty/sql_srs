@@ -1,5 +1,7 @@
 # pylint: disable=missing-module-docstring
 
+from datetime import timedelta, date, datetime
+
 import duckdb
 import streamlit as st
 import ast
@@ -19,6 +21,41 @@ if "exercises_sql_tables.duckdb" not in os.listdir("data"):
     )  # C'est un truc de hackeur mais on le fait car subprocess ne marche pas bien avec streamlit
     # subprocess.run(["python", "init_db.py"])
     logging.info("Data initialized")
+
+
+
+def check_users_solution(user_query: str):
+    """
+    Check the users solution with the solution given in the exercise by:
+    1: check the number of columns
+    2: check the number of lines
+    3: check the content of the columns
+
+    :param user_query:
+    :return:
+    """
+    # Votre Résultat
+    st.write("Your Result:")
+    result = con.execute(user_query).df()
+    st.dataframe(result)
+    if len(result.columns) != len(solution_df.columns):
+        st.sidebar.write(":red[Error:] the number of columns is not the same")
+    n_diff_lines = result.shape[0] - solution_df.shape[0]
+    if n_diff_lines != 0:
+        st.sidebar.write(
+            f"Result has :red[{n_diff_lines}] lines differents from the solution"
+        )
+    try:
+        result = result[solution_df.columns]
+        st.dataframe(result.compare(solution_df))
+        if result.compare(solution_df).empty:
+            st.sidebar.success(":green[Congratulations, you have a correct result]")
+            st.balloons()
+        else:
+            st.sidebar.write(":red[Error:] the content of the columns is not the same")
+
+    except KeyError as e:
+        st.sidebar.write(":red[Some columns are missing in the result]")
 
 
 st.title("SQL SRS Applications - Exercises")
@@ -54,8 +91,8 @@ with st.sidebar:
 
 
 if theme in my_options:
-    input_query = st.text_area("Veuillez saisir votre requête SQL:")
-    button_validation = st.button("Valider la requête")
+    input_query = st.text_area("Please enter your SQL query here :")
+    button_validation = st.button("Validate your query")
 
     exercise_name = exercise.loc[
         0, "exercise_name"
@@ -63,6 +100,21 @@ if theme in my_options:
     with open(f"answers/{exercise_name}.sql", "r") as f:
         ANSWER_STR = f.read()
     solution_df = con.execute(ANSWER_STR).df()
+
+    for n_days in [2, 7, 21]:
+        if st.button(f"Review again in {n_days} days"):
+            next_review = date.today() + timedelta(days=n_days)
+            st.write(f"Next review: {next_review}")
+            con.execute(
+                f"UPDATE memory_state SET last_reviewed = '{next_review}' WHERE exercise_name = '{exercise_name}'"
+            )
+            st.rerun()
+
+    if st.button("Reset"):
+        con.execute(
+            f"UPDATE memory_state SET last_reviewed = '1970-01-01' WHERE theme = '{theme}'"
+        )
+        st.rerun() #Permet de rerun tout le code dès le début pour au en live afficher les changements dans les tables.
 
     tab1, tab2 = st.tabs(["Tables", "Solution"])
 
@@ -80,26 +132,7 @@ if theme in my_options:
     # Resultats
     if button_validation:
         try:
-            # Votre Résultat
-            st.write("Your Result:")
-            result = con.execute(input_query).df()
-            st.dataframe(result)
-
-            if len(result.columns) != len(solution_df.columns):
-                st.write("Error: the number of columns is not the same")
-
-            n_diff_lines = result.shape[0] - solution_df.shape[0]
-            if n_diff_lines != 0:
-                st.write(
-                    f"Result has {n_diff_lines} lines differents from the solution"
-                )
-
-            try:
-                result = result[solution_df.columns]
-                st.dataframe(result.compare(solution_df))
-            except KeyError as e:
-                st.write("Some columns are missing in the result")
-
+            check_users_solution(input_query)
         except AttributeError as e:
             st.warning("Please enter a valid SQL query !!")
 
