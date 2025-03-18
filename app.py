@@ -27,7 +27,11 @@ st.write(
 )
 con = duckdb.connect(database="data/exercises_sql_tables.duckdb", read_only=False)
 
-my_options = ["CrossJoins", "GroupBy", "CTE", "SubQueries", "Window_Functions"]
+#Lister uniquement les thématiques disponibles
+
+availabble_theme_df = con.execute("SELECT DISTINCT theme FROM memory_state").df()
+my_options = availabble_theme_df['theme'].unique()
+
 with st.sidebar:
     theme = st.selectbox(
         "What would you like to review",
