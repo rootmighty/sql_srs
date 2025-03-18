@@ -39,7 +39,9 @@ with st.sidebar:
     if theme:
         exercise = (
             con.execute(
+              
                 f"SELECT theme, exercise_name, tables, last_reviewed FROM memory_state WHERE theme = '{theme}' ORDER BY last_reviewed ASC"
+
             )
             .df()
             .reset_index(drop=True)
